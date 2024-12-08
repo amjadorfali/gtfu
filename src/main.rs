@@ -4,7 +4,7 @@ use human_panic::setup_panic;
 use log::info;
 
 use gtfu::Cli;
-
+// check https://docs.rs/confy/latest/confy/index.html for managing configurations
 fn main() -> Result<()> {
     setup_panic!();
     env_logger::init();
