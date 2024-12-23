@@ -9,3 +9,8 @@ pub struct Cli {
     #[arg(default_value = "")]
     pub path: std::path::PathBuf,
 }
+
+// Read config
+// Save it somewhere
+// Use it for later to bootup the process without reading config again
+// Use confy

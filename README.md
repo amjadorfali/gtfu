@@ -9,10 +9,11 @@ This tool is meant to help stubborn developers (like me) get up and touch grass 
 
 ## Features(WIP)!
 
-- Will force you to take breaks by blocking the screen.
 - Will automate the timer and break start/end.
+- Will support startup process.
+- Will force you to take breaks by blocking the screen.
 - Will supports multiple breaks.
-- Will have minimal setup required
+- Will have minimal setup required.
 - Will be cross-platform.
 
 ## Where will it run?
