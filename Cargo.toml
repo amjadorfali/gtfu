@@ -11,5 +11,6 @@ human-panic = "2.0.2"
 log = "0.4.22"
 
 [build-dependencies]
+anyhow = "1.0.94"
 clap = { version = "4.5.23", features = ["derive"] }
 clap_mangen = "0.2.24"

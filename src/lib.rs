@@ -1,13 +1,24 @@
+use anyhow::{Context, Result};
 use clap::Parser;
-/// Search for a pattern in a file and display the lines that contain it.
-#[derive(Parser)]
-pub struct Cli {
-    /// The pattern to look for
-    pub pattern: String,
+use std::{num::ParseIntError, time::Duration};
 
-    /// The path to the file to read
-    #[arg(default_value = "")]
-    pub path: std::path::PathBuf,
+// Search for a pattern in a file and display the lines that contain it.
+#[derive(Parser, Debug)]
+pub struct Cli {
+    /// Break frequeny; Time in format: `hh:mm`
+    #[arg(value_parser = parse_duration)]
+    pub freq: Duration,
+
+    /// Break length; Time in format: `hh:mm`
+    #[arg(value_parser = parse_duration)]
+    pub len: Duration,
+}
+
+fn parse_duration(arg: &str) -> Result<Duration> {
+    arg.parse::<u8>()?;
+    //.map_err(|_| format!("parse error"));
+
+    Ok(Duration::new(5, 0))
 }
 
 // Read config
