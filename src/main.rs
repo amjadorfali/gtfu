@@ -1,8 +1,15 @@
-use anyhow::{Context, Result};
+use std::{
+    io::{stdout, Write},
+    ops::{Sub, SubAssign},
+    thread,
+    time::Duration,
+};
+
+use anyhow::Result;
 use clap::Parser;
 use env_logger::{Env, DEFAULT_FILTER_ENV};
 use human_panic::setup_panic;
-use log::{info, log};
+use log::info;
 
 use gtfu::Cli;
 // check https://docs.rs/confy/latest/confy/index.html for managing configurations
@@ -11,6 +18,7 @@ use gtfu::Cli;
 //  - Start/Stop the timer
 //  - Start/Skip/Reset a break
 //
+
 fn main() -> Result<()> {
     setup_panic!();
     let env = Env::default().filter_or(DEFAULT_FILTER_ENV, "gtfu");
@@ -19,7 +27,18 @@ fn main() -> Result<()> {
 
     let args = Cli::parse();
     println!("args are {args:?}");
-    // let content = std::fs::read_to_string(&args.path).with_context(|| format!("could not read file `{}`", args.path.display()))?;
+    let sleep_duration = Duration::new(1, 0);
+    let mut break_time = args.freq.clone();
+    print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
 
-    Ok(())
+    loop {
+        stdout().flush()?;
+        print!("\rNext break in: {} seconds", break_time.as_secs());
+        if break_time.is_zero() {
+            println!("\rhorrayyyyy!!! Go get a life now");
+            return Ok(());
+        }
+        break_time.sub_assign(sleep_duration);
+        thread::sleep(sleep_duration);
+    }
 }
