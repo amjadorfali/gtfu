@@ -12,6 +12,10 @@ pub struct Cli {
     /// Break length; Duration of time in format: `hh:mm`
     #[arg(value_parser = parse_duration)]
     pub len: Duration,
+
+    /// Idle Reset; Duration of time in format: `hh:mm`
+    #[arg(value_parser = parse_duration)]
+    pub reset: Option<Duration>,
 }
 
 fn time_parse_err_msg() -> String {
@@ -36,6 +40,7 @@ fn parse_duration(arg: &str) -> Result<Duration> {
         ));
     }
 }
+// TODO:
 // Read config
 // Save it somewhere
 // Use it for later to bootup the process without reading config again
