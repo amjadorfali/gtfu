@@ -40,8 +40,3 @@ fn parse_duration(arg: &str) -> Result<Duration> {
         ));
     }
 }
-// TODO:
-// Read config
-// Save it somewhere
-// Use it for later to bootup the process without reading config again
-// Use confy

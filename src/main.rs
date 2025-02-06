@@ -15,12 +15,6 @@ use log::info;
 
 use gtfu::Cli;
 // check https://docs.rs/confy/latest/confy/index.html for managing configurations
-// - Will automate the timer and break start/end. Need to have the ability to:
-//  - Take the user input
-//  - Start/Stop the timer
-//  - Start/Skip/Reset a break
-//
-
 // TODO: refactor threads into async tasks
 
 fn main() -> Result_anyhow<()> {

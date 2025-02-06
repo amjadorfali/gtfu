@@ -9,15 +9,15 @@ This tool is meant to help stubborn developers (like me) get up and touch grass 
 
 ## Features(WIP)!
 
-- Will automate the timer and break start/end.
-- Will support idle reset.
-- Will force you to take breaks by blocking the screen.
-- Will have minimal setup required.
-    - Will support startup process.
-    - Will save user config.
-- Will have an interactive TUI
-- Will be cross-platform.
-- Will supports multiple breaks.
+- [X] Will automate the timer and break start/end.
+- [ ] Will support idle reset.
+- [ ] Will force you to take breaks by blocking the screen.
+- [ ] Will have minimal setup required.
+     - [ ] Will support startup process.
+     - [ ] Will save user config. (Use confy)
+-  [ ] Will have an interactive TUI
+-  [ ] Will be cross-platform.
+-  [ ] Will supports multiple breaks.
 
 ## Where will it run?
 
