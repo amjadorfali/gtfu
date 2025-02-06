@@ -14,8 +14,6 @@ use human_panic::setup_panic;
 use log::info;
 
 use gtfu::Cli;
-// check https://docs.rs/confy/latest/confy/index.html for managing configurations
-// TODO: refactor threads into async tasks
 
 fn main() -> Result_anyhow<()> {
     setup_panic!();
