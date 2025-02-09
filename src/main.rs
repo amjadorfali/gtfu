@@ -10,11 +10,13 @@ use std::{
 use anyhow::{Error, Result as Result_anyhow};
 use clap::Parser;
 use env_logger::{Env, DEFAULT_FILTER_ENV};
+mod cli_parser;
+use cli_parser::Cli;
 use human_panic::setup_panic;
 use log::info;
 
-use gtfu::Cli;
-
+#[cfg(feature = "wayland")]
+pub mod wayland_idle;
 fn main() -> Result_anyhow<()> {
     setup_panic!();
     let env = Env::default().filter_or(DEFAULT_FILTER_ENV, "gtfu");
@@ -109,28 +111,17 @@ fn capture_interrupts(sender: Sender<String>) {
     }
 }
 
+// TODO:
 #[cfg(target_os = "macos")]
 fn get_idle_time() -> Option<Duration> {
-    let output = Command::new("ioreg")
-        .arg("-c")
-        .arg("IOHIDSystem")
-        .arg("-r")
-        .arg("-k")
-        .arg("HIDIdleTime")
-        .output()
-        .ok()?;
-    let stdout = String::from_utf8(output.stdout).ok()?;
-    let millis = stdout
-        .lines()
-        .find(|line| line.contains("HIDIdleTime"))?
-        .split('=')
-        .last()?
+    let output = Command::new("xprintidle").output().ok()?;
+    let millis = String::from_utf8(output.stdout)
+        .ok()?
         .trim()
         .parse::<u64>()
         .ok()?;
-    Some(Duration::from_nanos(millis))
+    Some(Duration::from_millis(millis))
 }
-
 #[cfg(target_os = "linux")]
 fn get_idle_time() -> Option<Duration> {
     let output = Command::new("xprintidle").output().ok()?;
