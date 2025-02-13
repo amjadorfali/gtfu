@@ -9,18 +9,19 @@ clap = { version = "4.5.23", features = ["derive"] }
 env_logger = "0.11.5"
 human-panic = "2.0.2"
 log = "0.4.22"
-lazy_static = {version="1.5.0", optional=true}
-wayland-client= {version="0.31.8", optional=true}
-wayland-protocols= {version="0.32.6", optional=true, features = ["staging", "client"]}
+user-idle = "0.6.0"
 
 
-[target.'cfg(not(features="wayland"))'.dependencies.user-idle]
-version = "0.6.0"
+# WAYLAND support
+#[target.'cfg(target_os = "linux")'.dependencies]
+x11rb = "0.13"
+uzers = "0.12"
+wayland-client = "0.31"
+wayland-protocols = { version = "0.32", features = ["client", "staging"] }
+lazy_static = "1.5"
 
 [build-dependencies]
 anyhow = "1.0.94"
 clap = { version = "4.5.23", features = ["derive"] }
 clap_mangen = "0.2.24"
 
-[features]
-wayland = ["dep:wayland-protocols", "dep:wayland-client","dep:lazy_static"]

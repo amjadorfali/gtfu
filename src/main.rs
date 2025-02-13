@@ -15,8 +15,11 @@ use cli_parser::Cli;
 use human_panic::setup_panic;
 use log::info;
 
-#[cfg(feature = "wayland")]
-pub mod wayland_idle;
+mod idle_detection {
+    mod idle;
+    pub mod wayland_idle;
+}
+
 fn main() -> Result_anyhow<()> {
     setup_panic!();
     let env = Env::default().filter_or(DEFAULT_FILTER_ENV, "gtfu");
@@ -109,26 +112,4 @@ fn capture_interrupts(sender: Sender<String>) {
         stdin().read_line(&mut line).unwrap();
         sender.send(line.trim().to_string()).unwrap();
     }
-}
-
-// TODO:
-#[cfg(target_os = "macos")]
-fn get_idle_time() -> Option<Duration> {
-    let output = Command::new("xprintidle").output().ok()?;
-    let millis = String::from_utf8(output.stdout)
-        .ok()?
-        .trim()
-        .parse::<u64>()
-        .ok()?;
-    Some(Duration::from_millis(millis))
-}
-#[cfg(target_os = "linux")]
-fn get_idle_time() -> Option<Duration> {
-    let output = Command::new("xprintidle").output().ok()?;
-    let millis = String::from_utf8(output.stdout)
-        .ok()?
-        .trim()
-        .parse::<u64>()
-        .ok()?;
-    Some(Duration::from_millis(millis))
 }
