@@ -53,6 +53,8 @@ fn run_break(cli_args: Cli, receiver: Receiver<String>) -> Result_anyhow<()> {
     let mut break_freq = cli_args.freq.clone();
     let mut break_length = cli_args.len.clone();
     let mut is_break = false;
+    let idle_reset_time = cli_args.reset.clone();
+
     loop {
         match receiver.try_recv() {
             Ok(interrupt) => match interrupt.as_str() {
@@ -71,6 +73,7 @@ fn run_break(cli_args: Cli, receiver: Receiver<String>) -> Result_anyhow<()> {
             },
             _ => {}
         }
+
         if is_break {
             if !paused {
                 break_length.sub_assign(sleep_duration);
@@ -96,6 +99,14 @@ fn run_break(cli_args: Cli, receiver: Receiver<String>) -> Result_anyhow<()> {
 
                 break_freq = cli_args.freq.clone();
                 is_break = true;
+                continue;
+            }
+
+            if let Some(reset) = idle_reset_time {
+                let idle_time = get_idle_time();
+                if idle_time.ge(&reset) {
+                    break_freq = cli_args.freq.clone();
+                }
             }
         }
 

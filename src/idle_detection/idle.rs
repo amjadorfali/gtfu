@@ -14,13 +14,16 @@ pub fn get_idle_time() -> Duration {
             if is_wayland() {
                 let _ = initialize_wayland();
 
+                println!("using wayland");
                 return Duration::new(get_wayland_idle_time(), 0);
             } else if is_x11() {
+                println!("using x11");
                 return match user_idle::UserIdle::get_time() {
                     Ok(duration) => duration.duration(),
                     _ => Duration::from_secs(0),
                 };
             } else {
+                println!("couldn't use any linux reset system");
                 return Duration::from_secs(0);
             };
         }

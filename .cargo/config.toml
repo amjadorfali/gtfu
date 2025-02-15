@@ -1,2 +1,7 @@
+# Uncomment locally only, on mac, and when working on linux
 [build]
 #target = "aarch64-unknown-linux-gnu"
+
+# This is needed for X11 to compile, IOW linux
+[env]
+PKG_CONFIG_SYSROOT_DIR= "/"

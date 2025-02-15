@@ -5,15 +5,15 @@ use std::time::Duration;
 // A break timer tool to help you get up when it's time!
 #[derive(Parser, Debug)]
 pub struct Cli {
-    /// Break frequeny; Duration of time in format: `hh:mm`
+    /// Break frequeny; Duration of time in format: `hh:mm:ss`
     #[arg(value_parser = parse_duration)]
     pub freq: Duration,
 
-    /// Break length; Duration of time in format: `hh:mm`
+    /// Break length; Duration of time in format: `hh:mm:ss`
     #[arg(value_parser = parse_duration)]
     pub len: Duration,
 
-    /// Idle Reset; Duration of time in format: `hh:mm`
+    /// Idle Reset; Duration of time in format: `hh:mm:ss`
     #[arg(value_parser = parse_duration)]
     pub reset: Option<Duration>,
 }
@@ -23,13 +23,14 @@ fn time_parse_err_msg() -> String {
 }
 fn parse_duration(arg: &str) -> Result<Duration> {
     let mut s = arg.split(":");
-    if let (Some(hrs), Some(mins)) = (s.next(), s.next()) {
-        let (hrs, mins): (u8, u8) = (
+    if let (Some(hrs), Some(mins), Some(secs)) = (s.next(), s.next(), s.next()) {
+        let (hrs, mins, secs): (u8, u8, u8) = (
             hrs.parse().with_context(time_parse_err_msg)?,
             mins.parse().with_context(time_parse_err_msg)?,
+            secs.parse().with_context(time_parse_err_msg)?,
         );
 
-        let time: u64 = (u64::from(hrs) * 60 * 60) + (u64::from(mins) * 60);
+        let time: u64 = (u64::from(hrs) * 60 * 60) + (u64::from(mins) * 60) + (u64::from(secs));
         if time.eq(&0) {
             return Err(Error::msg("Duration must be at least 0"));
         }
