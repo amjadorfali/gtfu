@@ -14,8 +14,8 @@ This tool is meant to help stubborn developers (like me) get up and touch grass 
 
 ## Features(WIP)!
 
-- [X] Will automate the timer and break start/end.
-- [X] Will support idle reset.
+- [X] Automates the timer and break start/end.
+- [X] Supports idle reset.
 - [ ] Will force you to take breaks by blocking the screen.
 - [ ] Will have minimal setup required.
      - [ ] Will support startup process.
@@ -29,9 +29,11 @@ This tool is meant to help stubborn developers (like me) get up and touch grass 
 # Contributing
 
 ## Self notes
-To run checks (cli and within lsp) for linux target_os on my macbook, I had to install libxscrnsaver, libx11, and pkg-config. I also needed to insall the specfic linux target using rustup, and use the following configuration: 
+To run checks (cli and within lsp) for linux `target_os` on my macbook, I had to install `libxscrnsaver`, `libx11`, and `pkg-config`. I also needed to insall the specfic linux target using `rustup`, and use the following configuration: 
 
-```.cargo/config.toml
+``` toml
+# .cargo/config.toml
+
 [build]
 target = "aarch64-unknown-linux-gnu"
 
