@@ -254,7 +254,6 @@ pub fn start_idle_monitor() -> Result<(), Box<dyn std::error::Error + Send + Syn
     Ok(())
 }
 
-#[expect(dead_code)]
 pub fn stop_idle_monitor() {
     MONITOR_RUNNING.store(false, Ordering::SeqCst);
 
