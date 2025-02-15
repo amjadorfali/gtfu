@@ -1,7 +1,6 @@
 use std::{
     io::{stdin, stdout, Write},
     ops::SubAssign,
-    process::Command,
     sync::mpsc::{channel, Receiver, Sender},
     thread,
     time::Duration,
@@ -16,10 +15,11 @@ use human_panic::setup_panic;
 use log::info;
 
 mod idle_detection {
-    mod idle;
+    pub mod idle;
+    #[cfg(target_os = "linux")]
     pub mod wayland_idle;
 }
-
+use idle_detection::idle::get_idle_time;
 fn main() -> Result_anyhow<()> {
     setup_panic!();
     let env = Env::default().filter_or(DEFAULT_FILTER_ENV, "gtfu");
@@ -75,10 +75,7 @@ fn run_break(cli_args: Cli, receiver: Receiver<String>) -> Result_anyhow<()> {
             if !paused {
                 break_length.sub_assign(sleep_duration);
             }
-            print!(
-                "\rRelax your anus - Rest ends in: {} seconds",
-                break_length.as_secs()
-            );
+            print!("\rRest ends in: {} seconds", break_length.as_secs());
             stdout().flush()?;
             if break_length.is_zero() {
                 break_length = cli_args.len.clone();
