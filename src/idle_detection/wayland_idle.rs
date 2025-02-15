@@ -222,6 +222,7 @@ pub fn get_idle_time() -> u64 {
     }
 }
 
+#[expect(dead_code)]
 pub fn start_idle_monitor() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     // Stop any existing monitor and wait for confirmation
     stop_idle_monitor();
@@ -253,6 +254,7 @@ pub fn start_idle_monitor() -> Result<(), Box<dyn std::error::Error + Send + Syn
     Ok(())
 }
 
+#[expect(dead_code)]
 pub fn stop_idle_monitor() {
     MONITOR_RUNNING.store(false, Ordering::SeqCst);
 
