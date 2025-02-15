@@ -7,11 +7,15 @@ This tool is meant to help stubborn developers (like me) get up and touch grass 
 1. I can!
 2. I need a simple, fast, and customizable breaktimer.
 
+## How will it work?
+
+- TUI functionality using Ratatui and crossterm. Winit for managing windows to block screen
+- MAYBE: Wry and Winit can be used to render a webview for a GUI exp
+
 ## Features(WIP)!
 
 - [X] Will automate the timer and break start/end.
-- [ ] Will support idle reset.
-    - To check for linux, i had to install libxscrnsaver, libx11, and pkg-config
+- [X] Will support idle reset.
 - [ ] Will force you to take breaks by blocking the screen.
 - [ ] Will have minimal setup required.
      - [ ] Will support startup process.
@@ -20,30 +24,19 @@ This tool is meant to help stubborn developers (like me) get up and touch grass 
 -  [ ] Will be cross-platform.
 -  [ ] Will supports multiple breaks.
 
-## Where will it run?
+---
 
-- MacOS
-- Linux
-- Windows
+# Contributing
 
-### Future plans
+## Self notes
+To run checks (cli and within lsp) for linux target_os on my macbook, I had to install libxscrnsaver, libx11, and pkg-config. I also needed to insall the specfic linux target using rustup, and use the following configuration: 
 
-- Mobile
-- ??? 
+```.cargo/config.toml
+[build]
+target = "aarch64-unknown-linux-gnu"
 
-## How will it work?
+[env]
+PKG_CONFIG_SYSROOT_DIR= "/"
 
-### TUI - PRIORITY
-
-Ratatui and crossterm to manage the TUI and user interactions. I can handle the screen blocking through other terminals or possibly windows like Winit
-
-### Some GUI - MAYBE
-
-Wry & Winit seem to be a good solution to render a webView and have some GUI for users.
-
-### GUI - NONO (For now) 
-
-Tauri seems like a good approach to build native desktop and mobile apps in one source code.
-
-
+```
 
