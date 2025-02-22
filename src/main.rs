@@ -19,6 +19,9 @@ mod idle_detection {
     #[cfg(target_os = "linux")]
     pub mod wayland_idle;
 }
+
+// Winit, softbuffer, tiny-skia, rusttype can be used to create a window
+
 use idle_detection::idle::get_idle_time;
 fn main() -> Result_anyhow<()> {
     setup_panic!();

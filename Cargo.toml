@@ -11,7 +11,9 @@ clap = { version = "4.5.23", features = ["derive"] }
 env_logger = "0.11.5"
 human-panic = "2.0.2"
 log = "0.4.22"
+softbuffer = "0.4.6"
 user-idle = "0.6.0"
+winit = "0.30.9"
 
 
 # WAYLAND support
