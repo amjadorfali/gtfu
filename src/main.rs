@@ -14,15 +14,17 @@ use cli_parser::Cli;
 use human_panic::setup_panic;
 use log::info;
 
+use idle_detection::idle::get_idle_time;
 mod idle_detection {
     pub mod idle;
     #[cfg(target_os = "linux")]
     pub mod wayland_idle;
 }
 
+mod window;
+mod winit_app;
 // Winit, softbuffer, tiny-skia, rusttype can be used to create a window
 
-use idle_detection::idle::get_idle_time;
 fn main() -> Result_anyhow<()> {
     setup_panic!();
     let env = Env::default().filter_or(DEFAULT_FILTER_ENV, "gtfu");
@@ -43,11 +45,8 @@ fn main() -> Result_anyhow<()> {
     println!("N: Next -- P: Pause/Play -- R: Reset -- E: Exit");
     let (sender, reciever) = channel::<String>();
     thread::spawn(move || capture_interrupts(sender));
-    thread::spawn(move || run_break(args, reciever))
-        .join()
-        .unwrap()?;
 
-    Ok(())
+    run_break(args, reciever)
 }
 
 fn run_break(cli_args: Cli, receiver: Receiver<String>) -> Result_anyhow<()> {
@@ -79,6 +78,7 @@ fn run_break(cli_args: Cli, receiver: Receiver<String>) -> Result_anyhow<()> {
 
         if is_break {
             if !paused {
+                window::init_app();
                 break_length.sub_assign(sleep_duration);
             }
             print!("\rRest ends in: {} seconds", break_length.as_secs());
