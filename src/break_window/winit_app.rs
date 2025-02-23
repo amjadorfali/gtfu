@@ -5,17 +5,18 @@ use std::rc::Rc;
 use winit::application::ApplicationHandler;
 use winit::event::{Event, WindowEvent};
 use winit::event_loop::{ActiveEventLoop, EventLoop};
+use winit::platform::run_on_demand::EventLoopExtRunOnDemand;
 use winit::window::{Window, WindowAttributes, WindowId};
 
-use crate::window::CustomEvent;
+use super::window::CustomEvent;
 
 /// Run a Winit application.
 #[allow(unused_mut)]
 pub(crate) fn run_app(
-    event_loop: EventLoop<CustomEvent>,
+    mut event_loop: EventLoop<CustomEvent>,
     mut app: (impl ApplicationHandler<CustomEvent> + 'static),
 ) {
-    event_loop.run_app(&mut app).unwrap();
+    event_loop.run_app_on_demand(&mut app).unwrap();
 }
 
 /// Create a window from a set of window attributes.
@@ -118,6 +119,7 @@ where
         let surface_state = self.surface_state.take();
         debug_assert!(surface_state.is_some());
         drop(surface_state);
+        println!("suspended");
     }
 
     fn window_event(
@@ -126,14 +128,25 @@ where
         window_id: WindowId,
         event: WindowEvent,
     ) {
-        let state = self.state.as_mut().unwrap();
+        let state = self.state.as_mut();
         let surface_state = self.surface_state.as_mut();
-        (self.event)(
-            state,
-            surface_state,
-            Event::WindowEvent { window_id, event },
-            event_loop,
-        );
+
+        match event {
+            WindowEvent::Destroyed => {
+                event_loop.exit();
+                return;
+            }
+            _ => {}
+        }
+
+        if let Some(state) = state {
+            (self.event)(
+                state,
+                surface_state,
+                Event::WindowEvent { window_id, event },
+                event_loop,
+            );
+        }
     }
 
     fn about_to_wait(&mut self, event_loop: &ActiveEventLoop) {
@@ -148,13 +161,14 @@ where
     }
 
     fn user_event(&mut self, event_loop: &ActiveEventLoop, event: CustomEvent) {
-        if let Some(state) = self.state.as_mut() {
-            (self.event)(
-                state,
-                self.surface_state.as_mut(),
-                Event::UserEvent(event),
-                event_loop,
-            );
+        event_loop.set_control_flow(winit::event_loop::ControlFlow::Wait);
+        match event {
+            CustomEvent::CLOSE => {
+                if let Some(state) = self.state.take() {
+                    drop(self.surface_state.take());
+                    drop(state);
+                }
+            }
         }
     }
 }

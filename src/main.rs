@@ -21,12 +21,22 @@ mod idle_detection {
     pub mod wayland_idle;
 }
 
-mod window;
-mod winit_app;
+mod break_window {
+    pub mod window;
+    pub mod winit_app;
+}
 // Winit, softbuffer, tiny-skia, rusttype can be used to create a window
 
 fn main() -> Result_anyhow<()> {
     setup_panic!();
+    let (init, proxy) = break_window::window::init_app();
+    init();
+
+    //run_window();
+    loop {
+        println!("Do anything");
+        thread::sleep(Duration::from_secs(1));
+    }
     let env = Env::default().filter_or(DEFAULT_FILTER_ENV, "gtfu");
     env_logger::init_from_env(env);
     info!("starting up");
@@ -39,7 +49,8 @@ fn main() -> Result_anyhow<()> {
             ));
         }
     }
-    print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
+    // Clear terminal
+    //print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
 
     println!("You can modify the break/timer using:");
     println!("N: Next -- P: Pause/Play -- R: Reset -- E: Exit");
@@ -78,7 +89,7 @@ fn run_break(cli_args: Cli, receiver: Receiver<String>) -> Result_anyhow<()> {
 
         if is_break {
             if !paused {
-                window::init_app();
+                //window::init_app();
                 break_length.sub_assign(sleep_duration);
             }
             print!("\rRest ends in: {} seconds", break_length.as_secs());

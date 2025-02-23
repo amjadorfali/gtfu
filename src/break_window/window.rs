@@ -7,9 +7,9 @@ use winit::keyboard::{Key, NamedKey};
 use winit::raw_window_handle::HasWindowHandle;
 use winit::window::WindowLevel;
 
-use crate::winit_app;
+use super::winit_app;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug)]
 pub enum CustomEvent {
     CLOSE,
 }
@@ -25,15 +25,19 @@ pub fn init_app() -> (impl FnOnce(), EventLoopProxy<CustomEvent>) {
     let event_loop = event_loop_builder.build().unwrap();
     let event_loop_proxy = event_loop.create_proxy();
 
+    let proxy2 = event_loop_proxy.clone();
     (
         || {
-            entry(event_loop);
+            entry(event_loop, proxy2);
         },
         event_loop_proxy,
     )
 }
 
-pub(crate) fn entry(event_loop: EventLoop<CustomEvent>) {
+pub(crate) fn entry(
+    event_loop: EventLoop<CustomEvent>,
+    event_loop_proxy: EventLoopProxy<CustomEvent>,
+) {
     let app = winit_app::WinitAppBuilder::with_init(
         |elwt| {
             let window = winit_app::make_window(elwt, |w| {
@@ -76,7 +80,7 @@ pub(crate) fn entry(event_loop: EventLoop<CustomEvent>) {
         },
         |_elwt, (window, context)| softbuffer::Surface::new(context, window.clone()).unwrap(),
     )
-    .with_event_handler(|(window, _context), surface, event, elwt| {
+    .with_event_handler(move |(window, _context), surface, event, elwt| {
         elwt.set_control_flow(ControlFlow::Wait);
 
         match event {
@@ -136,18 +140,16 @@ pub(crate) fn entry(event_loop: EventLoop<CustomEvent>) {
                     },
                 window_id,
             } if window_id == window.id() => {
-                elwt.exit();
+                let _ = event_loop_proxy.send_event(CustomEvent::CLOSE);
             }
 
-            Event::UserEvent(CustomEvent::CLOSE) => {
-                println!("should exit");
-                elwt.exit();
-            }
             Event::WindowEvent {
                 window_id: _,
                 event: _,
             } => {}
+
             Event::AboutToWait => {}
+
             unhandld => {
                 println!("unhandled event, {:?}", unhandld);
             }
