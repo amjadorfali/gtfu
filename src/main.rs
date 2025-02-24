@@ -7,7 +7,10 @@ use std::{
 };
 
 use anyhow::{Error, Result as Result_anyhow};
-use break_window::testing_windows::run_window;
+use break_window::{
+    window::{get_app, get_event_loop, CustomEvent},
+    winit_app::{self, run_app},
+};
 use clap::Parser;
 use env_logger::{Env, DEFAULT_FILTER_ENV};
 mod cli_parser;
@@ -31,14 +34,14 @@ mod break_window {
 
 fn main() -> Result_anyhow<()> {
     setup_panic!();
-    //let (mut app, event_loop, proxy) = break_window::window::init_app();
-    //
-    //let event_loop = winit_app::run_app(event_loop, &mut app);
+    let (event_loop, event_loop_proxy) = get_event_loop();
+    let mut app = get_app(event_loop_proxy.clone());
 
-    run_window();
+    let event_loop = run_app(event_loop, &mut app, &event_loop_proxy);
+
     let mut inc = 0;
     loop {
-        if inc.gt(&50) {
+        if inc.gt(&5) {
             print!("should exit");
             break;
         }
@@ -47,7 +50,7 @@ fn main() -> Result_anyhow<()> {
         thread::sleep(Duration::from_secs(1));
     }
 
-    //winit_app::run_app(event_loop, &mut app);
+    run_app(event_loop, &mut app, &event_loop_proxy);
     let env = Env::default().filter_or(DEFAULT_FILTER_ENV, "gtfu");
     env_logger::init_from_env(env);
     info!("starting up");

@@ -3,8 +3,9 @@ use std::marker::PhantomData;
 use std::rc::Rc;
 
 use winit::application::ApplicationHandler;
-use winit::event::{Event, WindowEvent};
-use winit::event_loop::{ActiveEventLoop, EventLoop};
+use winit::event::{Event, KeyEvent, WindowEvent};
+use winit::event_loop::{ActiveEventLoop, EventLoop, EventLoopProxy};
+use winit::keyboard::{Key, NamedKey};
 use winit::platform::run_on_demand::EventLoopExtRunOnDemand;
 use winit::window::{Window, WindowAttributes, WindowId};
 
@@ -15,7 +16,11 @@ use super::window::CustomEvent;
 pub(crate) fn run_app(
     mut event_loop: EventLoop<CustomEvent>,
     app: &mut (impl ApplicationHandler<CustomEvent> + 'static),
+    event_loop_proxy: &EventLoopProxy<CustomEvent>,
 ) -> EventLoop<CustomEvent> {
+    // Need to trigger a redraw as the first one from OS is happening before resize, which is
+    // causing the window to not have accurate surface calculations
+    let _ = event_loop_proxy.send_event(CustomEvent::REDRAW);
     event_loop.run_app_on_demand(app).unwrap();
     event_loop
 }
@@ -100,6 +105,13 @@ where
             surface_state: None,
         }
     }
+
+    pub fn drop_window(&mut self) {
+        if let Some(state) = self.state.take() {
+            drop(self.surface_state.take());
+            drop(state);
+        }
+    }
 }
 
 impl<T, S, Init, InitSurface, Handler> ApplicationHandler<CustomEvent>
@@ -129,16 +141,28 @@ where
         window_id: WindowId,
         event: WindowEvent,
     ) {
-        let state = self.state.as_mut();
-        let surface_state = self.surface_state.as_mut();
-
         match event {
+            WindowEvent::CloseRequested
+            | WindowEvent::KeyboardInput {
+                event:
+                    KeyEvent {
+                        logical_key: Key::Named(NamedKey::Escape),
+                        ..
+                    },
+                ..
+            } => {
+                (*self).drop_window();
+            }
+
             WindowEvent::Destroyed => {
                 event_loop.exit();
                 return;
             }
             _ => {}
         }
+
+        let state = self.state.as_mut();
+        let surface_state = self.surface_state.as_mut();
 
         if let Some(state) = state {
             (self.event)(
@@ -165,9 +189,16 @@ where
         event_loop.set_control_flow(winit::event_loop::ControlFlow::Wait);
         match event {
             CustomEvent::CLOSE => {
-                if let Some(state) = self.state.take() {
-                    drop(self.surface_state.take());
-                    drop(state);
+                (*self).drop_window();
+            }
+            CustomEvent::REDRAW => {
+                if let Some(state) = self.state.as_mut() {
+                    (self.event)(
+                        state,
+                        self.surface_state.as_mut(),
+                        Event::UserEvent(CustomEvent::REDRAW),
+                        event_loop,
+                    )
                 }
             }
         }

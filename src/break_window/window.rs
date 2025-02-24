@@ -4,23 +4,21 @@ use objc2::MainThreadMarker;
 use objc2_app_kit::NSWindowCollectionBehavior;
 use std::num::NonZeroU32;
 use winit::application::ApplicationHandler;
-use winit::event::{Event, KeyEvent, WindowEvent};
+use winit::event::{Event, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop, EventLoopProxy};
-use winit::keyboard::{Key, NamedKey};
 use winit::raw_window_handle::HasWindowHandle;
 use winit::window::WindowLevel;
 
 use super::winit_app;
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub enum CustomEvent {
     CLOSE,
+    REDRAW,
 }
-pub fn init_app() -> (
-    (impl ApplicationHandler<CustomEvent> + 'static),
-    EventLoop<CustomEvent>,
-    EventLoopProxy<CustomEvent>,
-) {
+
+pub fn get_event_loop() -> (EventLoop<CustomEvent>, EventLoopProxy<CustomEvent>) {
     #[cfg(target_os = "macos")]
     use winit::platform::macos::{ActivationPolicy, EventLoopBuilderExtMacOS};
 
@@ -32,12 +30,10 @@ pub fn init_app() -> (
     let event_loop = event_loop_builder.build().unwrap();
     let event_loop_proxy = event_loop.create_proxy();
 
-    let proxy2 = event_loop_proxy.clone();
-    let app = entry(proxy2);
-    (app, event_loop, event_loop_proxy)
+    (event_loop, event_loop_proxy)
 }
 
-pub(crate) fn entry(
+pub(crate) fn get_app(
     event_loop_proxy: EventLoopProxy<CustomEvent>,
 ) -> (impl ApplicationHandler<CustomEvent> + 'static) {
     winit_app::WinitAppBuilder::with_init(
@@ -130,27 +126,15 @@ pub(crate) fn entry(
             }
 
             Event::WindowEvent {
-                event:
-                    WindowEvent::CloseRequested
-                    | WindowEvent::KeyboardInput {
-                        event:
-                            KeyEvent {
-                                logical_key: Key::Named(NamedKey::Escape),
-                                ..
-                            },
-                        ..
-                    },
-                window_id,
-            } if window_id == window.id() => {
-                let _ = event_loop_proxy.send_event(CustomEvent::CLOSE);
-            }
-
-            Event::WindowEvent {
                 window_id: _,
                 event: _,
             } => {}
 
             Event::AboutToWait => {}
+
+            Event::UserEvent(CustomEvent::REDRAW) => {
+                window.request_redraw();
+            }
 
             unhandld => {
                 println!("unhandled event, {:?}", unhandld);
