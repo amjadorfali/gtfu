@@ -7,6 +7,7 @@ use std::{
 };
 
 use anyhow::{Error, Result as Result_anyhow};
+use break_window::testing_windows::run_window;
 use clap::Parser;
 use env_logger::{Env, DEFAULT_FILTER_ENV};
 mod cli_parser;
@@ -22,6 +23,7 @@ mod idle_detection {
 }
 
 mod break_window {
+    pub mod testing_windows;
     pub mod window;
     pub mod winit_app;
 }
@@ -29,14 +31,23 @@ mod break_window {
 
 fn main() -> Result_anyhow<()> {
     setup_panic!();
-    let (init, proxy) = break_window::window::init_app();
-    init();
+    //let (mut app, event_loop, proxy) = break_window::window::init_app();
+    //
+    //let event_loop = winit_app::run_app(event_loop, &mut app);
 
-    //run_window();
+    run_window();
+    let mut inc = 0;
     loop {
+        if inc.gt(&50) {
+            print!("should exit");
+            break;
+        }
+        inc += 1;
         println!("Do anything");
         thread::sleep(Duration::from_secs(1));
     }
+
+    //winit_app::run_app(event_loop, &mut app);
     let env = Env::default().filter_or(DEFAULT_FILTER_ENV, "gtfu");
     env_logger::init_from_env(env);
     info!("starting up");

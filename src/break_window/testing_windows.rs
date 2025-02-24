@@ -1,3 +1,15 @@
+use std::{num::NonZeroU32, rc::Rc};
+
+use softbuffer::Surface;
+use winit::{
+    application::ApplicationHandler,
+    event::{KeyEvent, WindowEvent},
+    event_loop::EventLoop,
+    keyboard::{Key, NamedKey},
+    platform::{macos::EventLoopBuilderExtMacOS, run_on_demand::EventLoopExtRunOnDemand},
+    window::{Window, WindowAttributes},
+};
+
 struct Application {
     window: Option<Rc<Window>>,
     surface: Option<Surface<Rc<Window>, Rc<Window>>>,
@@ -88,10 +100,11 @@ impl ApplicationHandler for Application {
         }
     }
 }
-fn run_window() {
-    let mut event_loop = EventLoop::builder()
+
+pub fn run_window() {
+    let event_loop = EventLoop::builder()
         .with_activation_policy(winit::platform::macos::ActivationPolicy::Accessory)
         .build()
         .unwrap();
-    let _ = event_loop.run_app_on_demand(&mut Application::new());
+    let _ = event_loop.run_app(&mut Application::new());
 }

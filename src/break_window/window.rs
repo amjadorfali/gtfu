@@ -1,6 +1,9 @@
+#[cfg(target_os = "macos")]
 use objc2::MainThreadMarker;
+#[cfg(target_os = "macos")]
 use objc2_app_kit::NSWindowCollectionBehavior;
 use std::num::NonZeroU32;
+use winit::application::ApplicationHandler;
 use winit::event::{Event, KeyEvent, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop, EventLoopProxy};
 use winit::keyboard::{Key, NamedKey};
@@ -13,7 +16,11 @@ use super::winit_app;
 pub enum CustomEvent {
     CLOSE,
 }
-pub fn init_app() -> (impl FnOnce(), EventLoopProxy<CustomEvent>) {
+pub fn init_app() -> (
+    (impl ApplicationHandler<CustomEvent> + 'static),
+    EventLoop<CustomEvent>,
+    EventLoopProxy<CustomEvent>,
+) {
     #[cfg(target_os = "macos")]
     use winit::platform::macos::{ActivationPolicy, EventLoopBuilderExtMacOS};
 
@@ -26,19 +33,14 @@ pub fn init_app() -> (impl FnOnce(), EventLoopProxy<CustomEvent>) {
     let event_loop_proxy = event_loop.create_proxy();
 
     let proxy2 = event_loop_proxy.clone();
-    (
-        || {
-            entry(event_loop, proxy2);
-        },
-        event_loop_proxy,
-    )
+    let app = entry(proxy2);
+    (app, event_loop, event_loop_proxy)
 }
 
 pub(crate) fn entry(
-    event_loop: EventLoop<CustomEvent>,
     event_loop_proxy: EventLoopProxy<CustomEvent>,
-) {
-    let app = winit_app::WinitAppBuilder::with_init(
+) -> (impl ApplicationHandler<CustomEvent> + 'static) {
+    winit_app::WinitAppBuilder::with_init(
         |elwt| {
             let window = winit_app::make_window(elwt, |w| {
                 w.with_decorations(false)
@@ -154,7 +156,5 @@ pub(crate) fn entry(
                 println!("unhandled event, {:?}", unhandld);
             }
         }
-    });
-
-    winit_app::run_app(event_loop, app);
+    })
 }

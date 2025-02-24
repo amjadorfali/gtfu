@@ -14,9 +14,10 @@ use super::window::CustomEvent;
 #[allow(unused_mut)]
 pub(crate) fn run_app(
     mut event_loop: EventLoop<CustomEvent>,
-    mut app: (impl ApplicationHandler<CustomEvent> + 'static),
-) {
-    event_loop.run_app_on_demand(&mut app).unwrap();
+    app: &mut (impl ApplicationHandler<CustomEvent> + 'static),
+) -> EventLoop<CustomEvent> {
+    event_loop.run_app_on_demand(app).unwrap();
+    event_loop
 }
 
 /// Create a window from a set of window attributes.
