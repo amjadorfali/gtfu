@@ -6,7 +6,6 @@ use winit::application::ApplicationHandler;
 use winit::event::{Event, KeyEvent, WindowEvent};
 use winit::event_loop::{ActiveEventLoop, EventLoop, EventLoopProxy};
 use winit::keyboard::{Key, NamedKey};
-use winit::platform::run_on_demand::EventLoopExtRunOnDemand;
 use winit::window::{Window, WindowAttributes, WindowId};
 
 use super::window::CustomEvent;
@@ -15,14 +14,13 @@ use super::window::CustomEvent;
 #[allow(unused_mut)]
 pub(crate) fn run_app(
     mut event_loop: EventLoop<CustomEvent>,
-    app: &mut (impl ApplicationHandler<CustomEvent> + 'static),
+    mut app: (impl ApplicationHandler<CustomEvent> + 'static),
     event_loop_proxy: &EventLoopProxy<CustomEvent>,
-) -> EventLoop<CustomEvent> {
+) {
     // Need to trigger a redraw as the first one from OS is happening before resize, which is
     // causing the window to not have accurate surface calculations
     let _ = event_loop_proxy.send_event(CustomEvent::REDRAW);
-    event_loop.run_app_on_demand(app).unwrap();
-    event_loop
+    event_loop.run_app(&mut app).unwrap();
 }
 
 /// Create a window from a set of window attributes.

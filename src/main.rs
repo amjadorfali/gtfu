@@ -8,9 +8,10 @@ use std::{
 
 use anyhow::{Error, Result as Result_anyhow};
 use break_window::{
-    window::{get_app, get_event_loop, CustomEvent},
-    winit_app::{self, run_app},
+    window::{get_app, get_event_loop},
+    winit_app::run_app,
 };
+
 use clap::Parser;
 use env_logger::{Env, DEFAULT_FILTER_ENV};
 mod cli_parser;
@@ -26,31 +27,25 @@ mod idle_detection {
 }
 
 mod break_window {
-    pub mod testing_windows;
     pub mod window;
     pub mod winit_app;
 }
+
 // Winit, softbuffer, tiny-skia, rusttype can be used to create a window
 
 fn main() -> Result_anyhow<()> {
     setup_panic!();
-    let (event_loop, event_loop_proxy) = get_event_loop();
-    let mut app = get_app(event_loop_proxy.clone());
 
-    let event_loop = run_app(event_loop, &mut app, &event_loop_proxy);
+    procspawn::init();
+    let handle = procspawn::spawn((), |_| {
+        let (event_loop, event_loop_proxy) = get_event_loop();
+        let app = get_app(event_loop_proxy.clone());
 
-    let mut inc = 0;
-    loop {
-        if inc.gt(&5) {
-            print!("should exit");
-            break;
-        }
-        inc += 1;
-        println!("Do anything");
-        thread::sleep(Duration::from_secs(1));
-    }
+        run_app(event_loop, app, &event_loop_proxy);
+    });
 
-    run_app(event_loop, &mut app, &event_loop_proxy);
+    let _result = handle.join().unwrap();
+
     let env = Env::default().filter_or(DEFAULT_FILTER_ENV, "gtfu");
     env_logger::init_from_env(env);
     info!("starting up");

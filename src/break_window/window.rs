@@ -26,7 +26,6 @@ pub fn get_event_loop() -> (EventLoop<CustomEvent>, EventLoopProxy<CustomEvent>)
 
     #[cfg(target_os = "macos")]
     event_loop_builder.with_activation_policy(ActivationPolicy::Accessory);
-
     let event_loop = event_loop_builder.build().unwrap();
     let event_loop_proxy = event_loop.create_proxy();
 
@@ -34,13 +33,15 @@ pub fn get_event_loop() -> (EventLoop<CustomEvent>, EventLoopProxy<CustomEvent>)
 }
 
 pub(crate) fn get_app(
-    event_loop_proxy: EventLoopProxy<CustomEvent>,
+    _event_loop_proxy: EventLoopProxy<CustomEvent>,
 ) -> (impl ApplicationHandler<CustomEvent> + 'static) {
     winit_app::WinitAppBuilder::with_init(
         |elwt| {
             let window = winit_app::make_window(elwt, |w| {
                 w.with_decorations(false)
                     .with_window_level(WindowLevel::AlwaysOnTop)
+                    .with_resizable(false)
+                    .with_maximized(true)
             });
 
             let context = softbuffer::Context::new(window.clone()).unwrap();

@@ -15,6 +15,9 @@ I am focused on making it cross-platform, though windows is the least of my prio
 - [ ] Will force you to take breaks by blocking the screen - Winit
 - [ ] Will have minimal setup required.
      - [ ] Will support startup process.
+      - Macos https://developer.apple.com/documentation/coreservices/launch_services
+      - Linux ... (systemd?)
+      - Windows ...
      - [ ] Will save user config. (Use confy)
 - [ ] Will have an interactive TUI - Ratatui/Crossterm
 - [ ] Will supports multiple breaks.
