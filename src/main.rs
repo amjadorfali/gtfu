@@ -8,7 +8,7 @@ use std::{
 
 use anyhow::{Error, Result as Result_anyhow};
 use break_window::{
-    window::{get_app, get_event_loop},
+    window::{get_app, get_event_loop, CustomEvent},
     winit_app::run_app,
 };
 
@@ -31,21 +31,9 @@ mod break_window {
     pub mod winit_app;
 }
 
-// Winit, softbuffer, tiny-skia, rusttype can be used to create a window
-
 fn main() -> Result_anyhow<()> {
     setup_panic!();
-
     procspawn::init();
-    let handle = procspawn::spawn((), |_| {
-        let (event_loop, event_loop_proxy) = get_event_loop();
-        let app = get_app(event_loop_proxy.clone());
-
-        run_app(event_loop, app, &event_loop_proxy);
-    });
-
-    let _result = handle.join().unwrap();
-
     let env = Env::default().filter_or(DEFAULT_FILTER_ENV, "gtfu");
     env_logger::init_from_env(env);
     info!("starting up");
@@ -62,7 +50,7 @@ fn main() -> Result_anyhow<()> {
     //print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
 
     println!("You can modify the break/timer using:");
-    println!("N: Next -- P: Pause/Play -- R: Reset -- E: Exit");
+    println!("N: Next -- R: Reset -- E: Exit");
     let (sender, reciever) = channel::<String>();
     thread::spawn(move || capture_interrupts(sender));
 
@@ -71,7 +59,6 @@ fn main() -> Result_anyhow<()> {
 
 fn run_break(cli_args: Cli, receiver: Receiver<String>) -> Result_anyhow<()> {
     let sleep_duration = Duration::new(1, 0);
-    let mut paused = false;
     let mut break_freq = cli_args.freq.clone();
     let mut break_length = cli_args.len.clone();
     let mut is_break = false;
@@ -85,7 +72,6 @@ fn run_break(cli_args: Cli, receiver: Receiver<String>) -> Result_anyhow<()> {
                     break_freq = cli_args.freq.clone();
                     break_length = cli_args.len.clone();
                 }
-                "P" | "p" => paused = !paused,
                 "R" | "r" => {
                     break_freq = cli_args.freq.clone();
                     break_length = cli_args.len.clone();
@@ -97,20 +83,29 @@ fn run_break(cli_args: Cli, receiver: Receiver<String>) -> Result_anyhow<()> {
         }
 
         if is_break {
-            if !paused {
-                //window::init_app();
-                break_length.sub_assign(sleep_duration);
-            }
-            print!("\rRest ends in: {} seconds", break_length.as_secs());
-            stdout().flush()?;
-            if break_length.is_zero() {
-                break_length = cli_args.len.clone();
-                is_break = false;
-            }
+            let handle = procspawn::spawn(
+                (break_length, sleep_duration),
+                |(mut break_length, sleep_duration)| {
+                    let (event_loop, event_loop_proxy) = get_event_loop();
+                    let app = get_app(event_loop_proxy.clone());
+
+                    let thread_event_loop_proxy = event_loop_proxy.clone();
+                    thread::spawn(move || loop {
+                        break_length.sub_assign(sleep_duration);
+                        if break_length.is_zero() {
+                            let _ = thread_event_loop_proxy.send_event(CustomEvent::CLOSE);
+                        }
+                        thread::sleep(sleep_duration);
+                    });
+                    run_app(event_loop, app, &event_loop_proxy);
+                },
+            );
+
+            let _result = handle.join().unwrap();
+            break_length = cli_args.len.clone();
+            is_break = false;
         } else {
-            if !paused {
-                break_freq.sub_assign(sleep_duration);
-            }
+            break_freq.sub_assign(sleep_duration);
             print!("\rNext break in: {} seconds", break_freq.as_secs());
             stdout().flush()?;
             if break_freq.is_zero() {
